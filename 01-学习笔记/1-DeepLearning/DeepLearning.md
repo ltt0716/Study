@@ -1,6 +1,6 @@
 # 构建一个神经网络
-![layer](./images/DeepLearning/image-0.png)  
-![输入数据](./images/DeepLearning/image-1.png)
+![layer](./images/image-0.png)  
+![输入数据](./images/image-1.png)
 ``` 
 #定义layer：第一种方法
 layer_1 = Dense(units=3,activation="sigmoid")  
@@ -25,7 +25,7 @@ model.predict(x_new)
 ```
 
 # 前向传播 Numpy
-![前向传播](./images/DeepLearning/image-3.png)
+![前向传播](./images/image-3.png)
 ```  
 #layer实现 
 def dense(a in,w,b, g):
@@ -90,7 +90,7 @@ model.fit(X,Y,epochs=100)
 ```
 
 # 训练过程
-![训练过程](./images/DeepLearning/image-4.png)
+![训练过程](./images/image-4.png)
 
 # 激活函数选择  
 ## 输出层（out layer）
@@ -118,7 +118,7 @@ model.fit(X,Y,epochs=100)
    - 激活函数: ReLU 函数 (Rectified Linear Unit)
    - 原因: ReLU 函数 f(x) = max(0, x) 的特性是，当输入大于0时，输出等于输入；当输入小于或等于0时，输出为0。这确保了模型的最终预测值永远不会是负数。 
   
-![out layer:activation](./images/DeepLearning/image-5.png)
+![out layer:activation](./images/image-5.png)
 ## 隐藏层（hidden layer）
 对于隐藏层，选择的自由度更大，但经过多年的实践，业界已经形成了强烈的共识。在现代深度学习中，ReLU 是隐藏层的默认和首选激活函数（除非y输出是2值选择sigmoid）。
 原因如下：
@@ -132,14 +132,36 @@ model.fit(X,Y,epochs=100)
         * 当输入大于0时，其导数恒为1。这使得梯度可以顺畅地在网络中流动，不会因为连乘而衰减。
         * 虽然在输入小于0时，其梯度为0（也会导致神经元“死亡”的问题，但有 Leaky ReLU 等变体来解决），但它只有一个饱和区，相比 Sigmoid 已经极大地改善了梯度消失问题，使得训练深层网络成为可能。
    
-![hidden layer:activation](./images/DeepLearning/image-6.png)
+![hidden layer:activation](./images/image-6.png)
 
 # Softmax 
-![softmax](./images/DeepLearning/image-7.png)
-![softmax-cost](./images/DeepLearning/image-8.png) 
+![softmax](./images/image-7.png)
+![softmax-cost](./images/image-8.png) 
 
 # 手写数字识别（MNIST with softmax） 
 1. 基础实现  
-![MNIST](./images/DeepLearning/image-9.png)  
+![MNIST](./images/image-9.png)  
 2. Softmax改进
-![softmax改进](./images/DeepLearning/image-10.png)
+![softmax改进](./images/image-10.png)
+![more numerially accurate](image-01.png)
+3. Adam算法
+学习率可以不相同 需要给一个初始值
+![Adam](./images/image-13.png)
+![Adam](./images/image-12.png)
+4. 成本函数
+![costfun](./images/image-17.png)
+# 多分类 多标签 不一样
+![multiple classes](./images/image-11.png)
+
+# 卷积层(convolutional layer)
+- 每个神经元只看前一层的部分输入 之查看输入的有限窗口
+- 加快计算速度
+- 需要更少的数据
+- 不容易出现过拟合
+![convolution layer](./images/image-14.png)
+![convolution layer](./images/image-15.png)
+
+# 模型评估
+- 训练集 training set
+- 测试集 test set
+![evaluate model](./images/image-16.png)
