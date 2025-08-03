@@ -8,18 +8,18 @@
 
 ### ✍🏻学习笔记
 1. **DeepLearning**
-  - [DeepLearning.md](01-学习笔记\1-DeepLearning\DeepLearning.md)
+  - [DeepLearning.md](01-学习笔记/1-DeepLearning/DeepLearning.md)
 
 2. **NEW**
-  - [X.md](01-学习笔记\1-DeepLearning\DeepLearning.md)
+  - [X.md](01-学习笔记/1-DeepLearning/DeepLearning.md)
 
 ### 🤖技术笔记
 1. **环境配置**
-  - [环境配置.md](02-技术笔记\1-环境配置.md)
+  - [环境配置.md](02-技术笔记/1-环境配置.md)
 2. **重置U盘**
-  - [重置U盘.md](02-技术笔记\2-重置U盘.md)
+  - [重置U盘.md](02-技术笔记/2-重置U盘.md)
 3. **Git命令**
-  - [Git命令.md](02-技术笔记\3-Git命令.md)
+  - [Git命令.md](02-技术笔记/3-Git命令.md)
 
 ### 🚩Others
 - [NEW]()
