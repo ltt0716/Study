@@ -26,3 +26,20 @@ git diff --staged
 #如果想查看所有已暂存和未暂存的更改，用：
 git status
 ```
+
+# init
+```git 
+git config --global user.name "ltt0716"
+git config --global user.email "2509336485@qq.com"
+
+git config --list
+```
+
+# 撤销上次提交
+```git 
+git log 
+
+#copy commit id
+
+git revert id
+```
