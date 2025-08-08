@@ -14,7 +14,8 @@
         
 2. 创建后端 `Dockerfile` 文件   
    - 进入 Backend/ 目录，创建一个名为 Dockerfile 的文件（无后缀），并填入以下内容。这个文件专门为开发模式设计。
-   - 文件路径: /my-project/backend/Dockerfile
+   - **文件路径: `/SSICSS/Backend/Dockerfile`**
+   - **复制GitHub仓库中对应文件。**
     ```Dockerfile
     # 使用一个已经内置了 Maven 和 Java 8 (OpenJDK 8) 的官方镜像
     FROM maven:3.8-openjdk-8
@@ -44,7 +45,8 @@
 
 3. 前端创建 `Dockerfile` 文件
    - 进入 `Frontend/` 目录，创建 `Dockerfile` 文件（无文件后缀）。
-   - **文件路径: `/my-project/frontend/Dockerfile`**
+   - **文件路径: `/SSICSS/Frontend/Dockerfile`**
+   - **复制GitHub仓库中对应文件。**
     ```dockerfile
     # 使用一个轻量级的 Node.js 镜像
     FROM node:18-alpine
@@ -70,116 +72,101 @@
     ```
 
 4. 创建 `docker-compose.yml` (总指挥文件)  
-   - 这是整个系统的核心。在你的项目总目录 (/my-project/) 下创建 `docker-compose.yml` 文件。
-   - 文件路径: `/my-project/docker-compose.yml`
+   - 这是整个系统的核心。在你的项目总目录 (/SSICSS/) 下创建 `docker-compose.yml` 文件。
+   -** 文件路径: `/SSICSS/docker-compose.yml`**
+   - **复制GitHub仓库中对应文件。**
  
-    ```yml
- 
-   version: '3.8'   
-   services:
-     # 后端服务 (Java 8)
-     Backend:
-       build:
-         context: ./backend
-         dockerfile: Dockerfile
-       container_name: my-backend-app
-       ports:
-         - "8080:8080" # 映射应用端口: 主机:容器
-         - "5005:5005" # 映射远程调试端口
-       volumes:
-         - ./backend/src:/app/src # 将本地的 src 目录实时同步到容器内
-       environment:
-         - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/mydatabase?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-         - SPRING_DATASOURCE_USERNAME=root
-         - SPRING_DATASOURCE_PASSWORD=rootpassword
-         - SPRING_REDIS_HOST=redis-cache
-         - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-broker:9092
-       networks:
-         - dev-network
-       depends_on: # 确保这些服务先于后端启动
-         - mysql-db
-         - redis-cache
-         - kafka-broker
+    ```yml  
+    services:
+      # 前端服务
+      frontend:
+        build:
+        context: ./Frontend
+        dockerfile: Dockerfile
+        container_name: app-frontend
+        ports:
+          - "8081:8081" # 将容器的8081映射到主机的8081，避免和后端冲突
+        volumes:
+          - ./Frontend:/app # 实时同步整个前端项目
+          - /app/node_modules # 防止本地node_modules覆盖容器内的
+        networks:
+          - dev-network
 
-     # 前端服务
-     frontend:
-       build:
-         context: ./frontend
-         dockerfile: Dockerfile
-       container_name: my-frontend-app
-       ports:
-         - "8081:8080" # 将容器的8080映射到主机的8081，避免和后端冲突
-       volumes:
-         - ./frontend:/app # 实时同步整个前端项目
-         - /app/node_modules # 防止本地node_modules覆盖容器内的
-       networks:
-         - dev-network
+      # MySQL 数据库服务
+      mysql-db:
+        image: mysql:8.0
+        container_name: mysql-db
+        ports:
+          - "3306:3306"
+        environment:
+          - MYSQL_ROOT_PASSWORD=123456
+          - MYSQL_DATABASE=mydatabase
+        volumes:
+          - mysql-data:/var/lib/mysql
+        networks:
+          - dev-network
+        # --- 这是新增加的健康检查配置 ---
+        healthcheck:
+          test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-p3306", "-uroot", "-p123456"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+          start_period: 30s
 
-     # MySQL 数据库服务
-     mysql-db:
-       image: mysql:8.0
-       container_name: mysql-db
-       ports:
-         - "3306:3306"
-       environment:
-         - MYSQL_ROOT_PASSWORD=rootpassword
-         - MYSQL_DATABASE=mydatabase
-       volumes:
-         - mysql-data:/var/lib/mysql # 将数据持久化，防止容器重启后数据丢失
-       networks:
-         - dev-network
+      # Redis 服务
+      redis-cache:
+        image: redis:6.2-alpine
+        container_name: redis-cache
+        ports:
+          - "6379:6379"
+        command: redis-server --requirepass 123456
+        volumes:
+          - redis-data:/data # 持久化Redis数据
+        networks:
+          - dev-network
 
-     # Redis 服务
-     redis-cache:
-       image: redis:6.2-alpine
-       container_name: redis-cache
-       ports:
-         - "6379:6379"
-       volumes:
-         - redis-data:/data # 持久化Redis数据
-       networks:
-         - dev-network
+      # Zookeeper 服务 (Kafka 依赖)
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.0.1
+        container_name: zookeeper
+        ports:
+          - "2181:2181"
+        environment:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        networks:
+          - dev-network
 
-     # Zookeeper 服务 (Kafka 依赖)
-     zookeeper:
-       image: confluentinc/cp-zookeeper:7.0.1
-       container_name: zookeeper
-       ports:
-         - "2181:2181"
-       environment:
-         ZOOKEEPER_CLIENT_PORT: 2181
-         ZOOKEEPER_TICK_TIME: 2000
-       networks:
-         - dev-network
+      # Kafka 服务
+      kafka-broker:
+        image: confluentinc/cp-kafka:7.0.1
+        container_name: kafka-broker
+        ports:
+          - "9092:9092"
+        depends_on:
+          - zookeeper
+        environment:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker:29092,PLAINTEXT_HOST://localhost:9092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+        networks:
+          - dev-network
 
-     # Kafka 服务
-     kafka-broker:
-       image: confluentinc/cp-kafka:7.0.1
-       container_name: kafka-broker
-       ports:
-         - "9092:9092"
-       depends_on:
-         - zookeeper
-       environment:
-         KAFKA_BROKER_ID: 1
-         KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-         KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker:9092
-         KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-       networks:
-         - dev-network
+        # 定义一个共享网络，让所有容器可以互相通信
+      networks:
+        dev-network:
+        driver: bridge
 
-   # 定义一个共享网络，让所有容器可以互相通信
-   networks:
-     dev-network:
-       driver: bridge
-
-   # 声明数据卷，用于持久化存储
-   volumes:
-     mysql-data:
-     redis-data:
+      # 声明数据卷，用于持久化存储
+      volumes:
+        mysql-data:
+        redis-data:
     ```
+
 5. 一键启动！  
-   - 打开一个终端 (PowerShell 或 Windows Terminal)，cd 进入到你的项目总目录 (/my-project/)。  
+   - 打开一个终端 (PowerShell 或 Windows Terminal)，cd 进入到你的项目总目录 (/SSICSS/)。  
    - 运行命令：
     ```bash
     docker-compose up --build
@@ -190,20 +177,33 @@
 
 6. 访问和使用开发环境
    - 访问前端页面: 打开浏览器，访问 http://localhost:8081
-   - 访问后端API: 你的API的根路径是 http://localhost:8080
+   - 访问后端API: 你的API的根路径是 http://localhost:8082
    - 连接数据库:
      * 工具：Navicat
      * 主机: localhost
      * 端口: 3306
      * 用户: root
-     * 密码: rootpassword
+     * 密码: 123456
    - 连接Redis:
-     * 工具：Redis Desktop Manager
+     * 工具：Redis Insight
      * 主机: localhost
      * 端口: 6379
 
 7. 日常开发流程
    - 用 VS Code 或 IntelliJ IDEA 同时打开 backend 和 frontend 文件夹。
-   - 修改后端 .java 代码后保存，容器内的 Spring Boot 会自动重启。
+   - 修改后端 .java 代码后保存，Spring Boot 会自动重启 **(spring-dev-tools)**。
    - 修改前端 .vue 代码后保存，浏览器里的页面会自动热更新。
    - 一天工作结束后，在终端里按 Ctrl + C，然后运行 docker-compose down 来关闭所有服务。你的数据库数据会因为 volumes 的设置而被保留下来。
+  
+8. 基础命令
+  - 关闭并移除旧容器
+  ```
+  # 会保留 volume 数据卷
+  docker-compose down
+  ```
+
+  - 构建并启动所有服务
+  ```
+  # 强制销毁旧容器，重新创建新的容器
+  docker-compose up --build --force-recreate
+  ```
