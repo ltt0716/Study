@@ -431,3 +431,15 @@ model.fit(X,Y,epochs=100)
    - **公式**: Variance Reduction = Var(父节点) - (w_left * Var(左子节点) + w_right * Var(右子节点))
    - **预测**: 对于一个新的样本，让其在树中从上往下走，直到落入一个叶子节点。该叶子节点中所有训练样本的目标值 y 的平均值，就是模型的最终预测结果。
   >![regession treet](image-29.png)
+
+# 多个决策树 tree ensemble
+建立多个决策树，并让他们投票，从而让任何单颗树的的影响不那么敏感。
+  ![tree ensemble](image-31.png)
+
+- 有放回采样 sample with replacment
+
+- 随机森林
+  ![generate a tree sample](image-32.png)
+  ![random forest algorithm](image-33.png)
+
+-XGBoost
