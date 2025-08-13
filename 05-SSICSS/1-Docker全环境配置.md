@@ -189,21 +189,54 @@
      * 主机: localhost
      * 端口: 6379
 
-7. 日常开发流程
+7. **日常开发流程**
+   
    - 用 VS Code 或 IntelliJ IDEA 同时打开 backend 和 frontend 文件夹。
    - 修改后端 .java 代码后保存，Spring Boot 会自动重启 **(spring-dev-tools)**。
    - 修改前端 .vue 代码后保存，浏览器里的页面会自动热更新。
    - 一天工作结束后，在终端里按 Ctrl + C，然后运行 docker-compose down 来关闭所有服务。你的数据库数据会因为 volumes 的设置而被保留下来。
-  
-8. 基础命令
+
+---
+
+8. **基础命令**
+   
   - 关闭并移除旧容器
   ```
   # 会保留 volume 数据卷
   docker-compose down
   ```
-
   - 构建并启动所有服务
   ```
   # 强制销毁旧容器，重新创建新的容器
   docker-compose up --build --force-recreate
   ```
+  - 拉取镜像
+  ```
+  docker pull python:3.10-slim
+  ```
+
+   - 进入交互式命令行窗口
+   ```
+   # docker-compose exec <服务名称 容器名> <要执行的命令>
+   # `Ctrl` + `Z` 退出命令行
+   docker-compose exec backend /bin/bash
+   ```
+   
+
+  - **`docker-compose up`** VS **`docker-compose up --build`**
+
+| 特性 | `docker-compose up` | `docker-compose up --build` |
+| :--- | :--- | :--- |
+| **核心行为** | 检查服务所需的镜像是否存在。如果存在，直接使用该镜像启动容器。如果不存在，则先构建镜像再启动。 | **无视**已存在的镜像，直接根据 `Dockerfile` 和构建上下文（build context）重新构建一个全新的镜像，然后用新镜像启动容器。 |
+| **速度** | **快** (如果镜像已存在)。因为它跳过了耗时的构建过程，直接启动容器。 | **慢** (因为总要构建)。每次都要执行 `Dockerfile` 中的所有步骤（尽管可以利用层缓存）。 |
+| **适用场景** | **只修改了通过卷(volume)挂载的代码**（例如 `.py`, `.js` 文件），而没有动过环境配置。 | **修改了构建镜像所需的文件**时，必须使用此命令(添加新的python包、修改 `Dockerfile` 文件)。 |
+
+- `docker` 命令行内的相关操作  
+  |操作方式	| 生命周期 |	优点 | 	缺点 |
+  | :--- | :--- | :--- | :--- |
+  |在运行的容器内安装 (你现在做的)	|临时的，随容器销毁而消失	|快速、方便临时调试	|不可靠、不可重现，违反 Docker 核心思想
+  |在 Dockerfile 中安装 (推荐)|	永久的，成为镜像的一部分	|可靠、可重现，符合最佳实践	 | 需要重新构建镜像，稍慢
+
+---
+
+
